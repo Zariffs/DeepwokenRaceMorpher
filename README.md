@@ -1,7 +1,7 @@
 # DeepwokenRaceMorpher
 Made by Ukiyo, dont worry i optimized it and fixed some spaghetti code all credit to Ukiyo though
 
-```LUA
+```txt
 (Note, like before this only works on synapse lol)
 -- How to set up--
 Make sure to actually extract the contents of this zip
