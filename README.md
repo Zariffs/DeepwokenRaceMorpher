@@ -1,7 +1,7 @@
 # DeepwokenRaceMorpher
 Made by Ukiyo, dont worry i optimized it and fixed some spaghetti code all credit to Ukiyo though
 
-# SYNAPSE X ONLY
+# SYNAPSE X ONLY + How to set it up
 
 ```txt
 How to set Up
@@ -11,6 +11,8 @@ create a folder called DeepwokenMorphData in your Synapse X Workspace folder
 drag and drop the files that you jsut downloaded inside the new folder
 execute the script
 ```
+
+# keybinds are LeftCtrl + LeftAlt
 
 # Documentation
 
