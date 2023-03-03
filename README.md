@@ -1,6 +1,9 @@
 # DeepwokenRaceMorpher
 Made by Ukiyo, dont worry i optimized it and fixed some spaghetti code all credit to Ukiyo though
 
+# Donate to Ukiyos KoFi ( original creator)
+https://t.co/H7aNcgS7ST
+
 # SYNAPSE X ONLY + How to set it up
 
 ```txt
