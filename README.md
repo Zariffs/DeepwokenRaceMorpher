@@ -2,7 +2,7 @@
 Made by Ukiyo, all credit to Ukiyo 
 
 # Donate to Ukiyos KoFi ( original creator)
-https://t.co/H7aNcgS7ST
+https://t.co/H7aNcgS7ST | 
 https://discord.gg/f8rsP5gUBg
 
 
