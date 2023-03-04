@@ -1,5 +1,5 @@
 # DeepwokenRaceMorpher
-Made by Ukiyo, dont worry i optimized it and fixed some spaghetti code all credit to Ukiyo though
+Made by Ukiyo, all credit to Ukiyo 
 
 # Donate to Ukiyos KoFi ( original creator)
 https://t.co/H7aNcgS7ST
