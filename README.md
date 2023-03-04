@@ -3,7 +3,7 @@ Made by Ukiyo, all credit to Ukiyo
 
 # Donate to Ukiyos KoFi ( original creator)
 https://t.co/H7aNcgS7ST
-
+![Discord Shield](https://discordapp.com/api/guilds/1081264555465908414/widget.png?style=shield)
 # SYNAPSE X ONLY + How to set it up
 
 ```txt
@@ -20,8 +20,6 @@ execute the script
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ToldeHub/DeepwokenRaceMorpher/main/RaceMorphMenu.lua"))()
 ```
 
-# Discord
-https://discord.gg/f8rsP5gUBg
 
 # Documentation
 
