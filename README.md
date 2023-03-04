@@ -3,11 +3,7 @@ Made by Ukiyo, all credit to Ukiyo
 
 # Donate to Ukiyos KoFi ( original creator)
 https://t.co/H7aNcgS7ST
-
-
-
-![Discord](https://discordapp.com/api/guilds/1081264555465908414/widget.png?style=banner1)
-
+https://discord.gg/f8rsP5gUBg
 
 
 # SYNAPSE X ONLY + How to set it up
