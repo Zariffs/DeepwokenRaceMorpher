@@ -20,6 +20,9 @@ execute the script
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ToldeHub/DeepwokenRaceMorpher/main/RaceMorphMenu.lua"))()
 ```
 
+# Discord
+https://discord.gg/f8rsP5gUBg
+
 # Documentation
 
 -- Custom Race Documentation
