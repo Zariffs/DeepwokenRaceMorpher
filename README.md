@@ -3,7 +3,7 @@ Made by Ukiyo, all credit to Ukiyo
 
 # Donate to Ukiyos KoFi ( original creator)
 https://t.co/H7aNcgS7ST
-![Discord Shield](https://discordapp.com/api/guilds/1081264555465908414/widget.png?style=shield)
+![Discord Banner 1](https://discordapp.com/api/guilds/1081264555465908414/widget.png?style=banner1)
 # SYNAPSE X ONLY + How to set it up
 
 ```txt
