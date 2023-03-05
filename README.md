@@ -13,7 +13,7 @@ How to set Up
 
 Download the files ( click the green code buttona dn click downlaod as zip )
 create a folder called DeepwokenMorphData in your Synapse X Workspace folder
-drag and drop the files that you jsut downloaded inside the new folder
+drag and drop the files that you just downloaded inside the new folder
 execute the script
 ```
 
