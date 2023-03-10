@@ -1,4 +1,4 @@
--- ukiyo my beloved
+
 
 if not game:IsLoaded() then
 	game.Loaded:Wait()
@@ -16,7 +16,12 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerGui = ((RunService:IsStudio() and LocalPlayer.PlayerGui) or game.CoreGui)
 local Slot = LocalPlayer:GetAttribute("DataSlot")
 
-if (not Slot or Slot == "") then
+local AskedForRace = {}
+
+local CURRENT_PROMPTING = false
+
+
+if (not Slot or Slot == "") then	
 	if RunService:IsStudio() then
 		Slot = "STUDIO"
 	else 
@@ -39,6 +44,7 @@ local Settings = {
 	--ForceVisionShaperEye = false,
 	HideOathOrnaments = false,
 	LastRace = "Adret",
+
 }
 
 local OurChoices = {
@@ -49,7 +55,15 @@ local MainGui -- synasset.
 
 if RunService:IsStudio() then
 	MainGui = script:WaitForChild("MorphGui")
-else 
+else 	
+	if not isfolder("DeepwokenMorphData") then
+		LocalPlayer:Kick("Race Morph Checksum : \nThe Script couldn't find the whole folder, please make sure to set up the files correctly.")
+	end
+
+	if not isfile("DeepwokenMorphData/GuiItself.rbxm") then
+		LocalPlayer:Kick("Race Morph Checksum : \nThe Script couldn't find the GUI, please make sure to set up the files correctly.")
+	end
+
 	MainGui = game:GetObjects(getsynasset("DeepwokenMorphData/GuiItself.rbxm"))[1]
 end
 
@@ -58,6 +72,27 @@ GlobalAssets.Parent = script
 
 local EnchantEffects = MainGui:WaitForChild("EnchantmentEffects")
 EnchantEffects.Parent = script
+
+if not RunService:IsStudio() then
+	if isfolder("DeepwokenMorphData/CustomEnchantments") then
+		local Files = syn_io_listdir("DeepwokenMorphData/CustomEnchantments")
+		for i,File in pairs(Files) do 
+			local LoadedEnchantment = game:GetObjects(getsynasset(File))[1]
+			if EnchantEffects:FindFirstChild(LoadedEnchantment.Name) then
+				EnchantEffects[LoadedEnchantment.Name]:Destroy()
+			end
+			LoadedEnchantment.Parent = EnchantEffects
+		end
+	end
+
+	if isfolder("DeepwokenMorphData/CustomGlobalOrnaments") then
+		local Files = syn_io_listdir("DeepwokenMorphData/CustomGlobalOrnaments")
+		for i,File in pairs(Files) do 
+			local NewOrnament = game:GetObjects(getsynasset(File))[1]
+			NewOrnament.Parent = GlobalAssets
+		end
+	end
+end
 
 local OathEffects = MainGui:WaitForChild("OathOrnaments")
 OathEffects.Parent = script
@@ -97,6 +132,47 @@ local DeepOrnaments = DeepAssets:WaitForChild("RaceOrnaments")
 local OutfitCache = {}
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
+
+
+local function LoadMorphScript(Chunk,Ornament,Character,CurrentVarient)
+	local NewEnv = {
+		Character = Character,
+		CurrentVarient = CurrentVarient
+	}
+	local Success,MainFunction
+
+	if RunService:IsStudio() then
+		Success,MainFunction = pcall(function()
+			return function()
+				for i,v in pairs(getfenv(1)) do 
+					print(i,v)
+				end
+
+			end
+		end)
+	else 
+		Success,MainFunction = pcall(function()
+			return loadstring(
+				Chunk
+			)
+		end)
+	end
+
+
+	if Success then
+		local CurrentFuncENV = getfenv(MainFunction)
+		CurrentFuncENV.Character = Character
+		CurrentFuncENV.CurrentVarient = CurrentVarient
+		CurrentFuncENV.Ornament = Ornament
+
+		setfenv(MainFunction,CurrentFuncENV)
+
+		local SeperateTask = task.spawn(MainFunction)
+		return SeperateTask
+	else 
+		return nil
+	end
+end
 
 local function FetchOutfitsForTarget(UserId)
 	local Success,Request = nil,nil
@@ -504,6 +580,10 @@ local function addAccoutrement(character, accoutrement)
 	--accoutrement.Parent = character
 	local handle = accoutrement:FindFirstChild("Handle")
 	if handle then
+		handle.CanCollide = false
+		handle.Massless = true
+		handle.CanTouch = false 
+		handle.CanQuery = false
 		local accoutrementAttachment = handle:FindFirstChildOfClass("Attachment")
 		if accoutrementAttachment then
 			local characterAttachment = findFirstMatchingAttachment(character, accoutrementAttachment.Name)
@@ -645,6 +725,13 @@ local function ApplyFace(Decal,Part,EyeColor,ScleraColor)
 		elseif v:IsA("Decal") then
 			v.Name = "ComeOnStepItUp" 
 			v.Parent = Part
+		elseif v:IsA("Model") then
+			for _,bp in pairs(v:GetChildren()) do 
+				buildWeld("a",Decal,Part,bp,bp:FindFirstChildOfClass("Attachment").CFrame:Inverse(),CFrame.new(0,0,0))
+				bp.Color = EyeColor
+				bp.Parent = Decal
+			end
+			v:Destroy()
 		end
 	end
 
@@ -736,7 +823,7 @@ local function RegisterCloak(Character,AnimationController)
 end
 
 local function ApplyDeepwokenAccourtment(Accourtment,Head,CurrentRace,NoBad)
-	if Accourtment:IsA("Model") then		
+	if 	Accourtment:IsA("Model") then		
 		local NewAccourtment = Accourtment:Clone()
 		NewAccourtment.Name = math.random(1,100000000)
 
@@ -783,6 +870,8 @@ local function ApplyDeepwokenAccourtment(Accourtment,Head,CurrentRace,NoBad)
 		if NewAccourtment:FindFirstChild("MainWeldo") then
 			TheSwordTilter(NewAccourtment.MainWeldo)
 		end
+
+		return NewAccourtment
 	else 
 		local NewAccourtment
 
@@ -794,6 +883,10 @@ local function ApplyDeepwokenAccourtment(Accourtment,Head,CurrentRace,NoBad)
 
 		if NewAccourtment:FindFirstChild("HideType") then
 			HideEquipmentType(NewAccourtment.HideType.Value,Head.Parent)
+		end
+
+		if NewAccourtment:FindFirstChild("HideBody") then
+			ToggleBodypartVisiblity(Head.Parent,NewAccourtment.HideBody.Value)
 		end
 
 		if NewAccourtment:IsA("BasePart") then
@@ -957,11 +1050,23 @@ local function ApplyDeepwokenAccourtment(Accourtment,Head,CurrentRace,NoBad)
 				x.Color = MarkColor
 			elseif x:FindFirstChild("CustomColor1") then
 				--warn("what")
-				x.Color = CurrentRace.CurrentVarient.CustomColor1.Value
+				if x:IsA("Decal") then	
+					x.Color3 = CurrentRace.CurrentVarient.CustomColor1.Value
+				else
+					x.Color = CurrentRace.CurrentVarient.CustomColor1.Value
+				end
 			elseif x:FindFirstChild("CustomColor2") then
-				x.Color = CurrentRace.CurrentVarient.CustomColor2.Value
+				if x:IsA("Decal") then	
+					x.Color3 = CurrentRace.CurrentVarient.CustomColor2.Value
+				else
+					x.Color = CurrentRace.CurrentVarient.CustomColor2.Value
+				end
 			elseif x:FindFirstChild("CustomColor3") then
-				x.Color = CurrentRace.CurrentVarient.CustomColor3.Value
+				if x:IsA("Decal") then	
+					x.Color3 = CurrentRace.CurrentVarient.CustomColor3.Value
+				else
+					x.Color = CurrentRace.CurrentVarient.CustomColor3.Value
+				end
 			end
 		end
 
@@ -1260,7 +1365,7 @@ local function LoadRace(Type,Data)
 				Ornaments = {},
 				CurrentVarient = RaceData,
 				FacialMarkings = nil,
-				CustomColors = {}
+				CustomColors = {},
 			}	
 		end
 
@@ -1410,6 +1515,7 @@ local function LoadRace(Type,Data)
 				CurrentVarient = RaceData,
 				FacialMarkings = nil,
 				CustomColors = {}
+
 			}
 		end
 
@@ -1541,7 +1647,7 @@ local function GetClothes(id)
 		else 
 			Request = game:HttpGet(
 				"https://assetdelivery.roblox.com/v1/asset/?ID="..id
-			)
+			)	
 		end
 
 		local Start = string.find(Request,"<url>")
@@ -2141,7 +2247,7 @@ local function ApplyToCharacter(cr,plr,skip)
 				CurrentRace.CurrentVarient.HairColor.Value.R,CurrentRace.CurrentVarient.HairColor.Value.G,CurrentRace.CurrentVarient.HairColor.Value.B
 				)
 			end
-		elseif string.find(x.Name,"CapraSkull") or string.find(x.Name,"CapraMask") or  string.find(x.Name,"CapraHorns") or x.Name == "KhanHair" or x.Name == "CanorHair" or x.Name == "TiranFeathers" then
+		elseif string.find(x.Name,"KhanCirclet") or string.find(x.Name,"CapraSkull") or string.find(x.Name,"CapraMask") or  string.find(x.Name,"CapraHorns") or x.Name == "KhanHair" or x.Name == "CanorHair" or x.Name == "TiranFeathers" then
 			x.Transparency = 1
 		end
 	end
@@ -2288,7 +2394,7 @@ local function ApplyToCharacter(cr,plr,skip)
 					CurrentRace.FacialMarkings,CurrentCharacter.Head.MarkingMount,MarkColor
 				)
 			end
-		
+
 
 		end
 
@@ -2319,6 +2425,34 @@ local function ApplyToCharacter(cr,plr,skip)
 				local NewAC = ApplyDeepwokenAccourtment(
 					i,CurrentCharacter.Head,CurrentRace
 				)
+
+				if NewAC then
+					local Code = NewAC:FindFirstChildOfClass("LocalScript")
+
+					if Code then
+						if CurrentRace.ScriptConsent then
+							local TaskToBreak 
+							if RunService:IsStudio() then
+								TaskToBreak = LoadMorphScript("a",NewAC,CurrentCharacter,CurrentRace.CurrentVarient)
+							else 
+								TaskToBreak = LoadMorphScript(Code.Source,NewAC,CurrentCharacter,CurrentRace.CurrentVarient)
+							end
+
+							--local TaskToBreak = LoadMorphScript(Code.Source,NewAC,CurrentCharacter,CurrentRace.CurrentVarient)
+							if TaskToBreak then
+								local GlassSeal = nil
+
+								GlassSeal = NewAC:GetPropertyChangedSignal("Parent"):Connect(function()
+									if not NewAC.Parent then
+										coroutine.close(TaskToBreak)
+										GlassSeal:Disconnect()
+									end								
+								end)
+							end	
+						end	
+					end		
+				end
+
 
 				--NewAC.Parent = CurrentCharacter.CustomOrnaments
 			end
@@ -2444,7 +2578,7 @@ local function ApplyToCharacter(cr,plr,skip)
 
 			local Part0 = CurrentCharacter:FindFirstChild(NewOathFX:GetAttribute("Part0") or "HumanoidRootPart")
 
-			if NewOathFX.Name == "Visionshaper Eye" then
+			if CurrentRace.CustomOathFX == "Visionshaper Eye" then
 				local TempEyeColor = (CurrentRace.CurrentVarient:FindFirstChild("EyeColor") or {Value = Color3.new(0,0,0)}).Value
 
 				NewOathFX.Parent = CurrentCharacter.CustomOrnaments
@@ -2502,7 +2636,6 @@ local function ApplyToCharacter(cr,plr,skip)
 		}
 	end
 
-
 	if CurrentRace.GlobalOrnaments then
 		for i,v in pairs(CurrentRace.GlobalOrnaments) do 
 			local NewAC = ApplyDeepwokenAccourtment(
@@ -2528,19 +2661,45 @@ local function ApplyToCharacter(cr,plr,skip)
 			end
 		end
 
+		if CurrentCharacter:FindFirstChild("SilentheartTorso") then
+			if not CurrentCharacter["SilentheartArmLeft"]:FindFirstChildOfClass("SurfaceAppearance") then
+				local InvisAppearance = Instance.new("SurfaceAppearance")
+				InvisAppearance.ColorMap = "rbxassetid://9303615692"
+				InvisAppearance.AlphaMode = Enum.AlphaMode.Overlay
+				InvisAppearance.Parent = CurrentCharacter["SilentheartArmLeft"]
+			end
+			
+			if not CurrentCharacter["SilentheartArmRight"]:FindFirstChildOfClass("SurfaceAppearance") then
+				local InvisAppearance = Instance.new("SurfaceAppearance")
+				InvisAppearance.ColorMap = "rbxassetid://9303615692"
+				InvisAppearance.AlphaMode = Enum.AlphaMode.Overlay
+				InvisAppearance.Parent = CurrentCharacter["SilentheartArmRight"]
+			end
+			
+			if not CurrentCharacter["SilentheartTorso"]:FindFirstChildOfClass("SurfaceAppearance") then
+				local InvisAppearance = Instance.new("SurfaceAppearance")
+				InvisAppearance.ColorMap = "rbxassetid://9303615692"
+				InvisAppearance.AlphaMode = Enum.AlphaMode.Overlay
+				InvisAppearance.Parent = CurrentCharacter["SilentheartTorso"]
+			end
+		end
+
 		if CurrentCharacter:FindFirstChild("Linkstrider") then
 			CurrentCharacter.Linkstrider.Transparency = 1
 			CurrentCharacter.Linkstrider.Sparkles.Transparency = 1
 		end
 
-		--if CurrentCharacter:FindFirstChild("Jetstriker") then
-		--CurrentCharacter.Linkstrider.Transparency = 1
-		--CurrentCharacter.Linkstrider.Sparkles.Transparency = 1
-		--end
+		if CurrentCharacter:FindFirstChild("StarkindredCollar") then
+			CurrentCharacter.StarkindredCollar.Transparency = 1
+		end
 
+		if CurrentCharacter:FindFirstChild("WindRunnerParti") then
+			CurrentCharacter.WindRunnerParti.Swirl2.Texture = "rbxassetid://"	
+			CurrentCharacter.WindRunnerParti.Attachment.Swirl.Texture = "rbxassetid://"
+		end
 
 		if CurrentCharacter:FindFirstChild("HumanoidRootPart") then
-			for i,String in pairs(CurrentRace.HumanoidRootPart:GetChildren()) do 
+			for i,String in pairs(CurrentCharacter.HumanoidRootPart:GetChildren()) do 
 				if String.Name == "ContractorString" then
 					String.Transparency = NumberSequence.new(1)	
 				end
@@ -2562,6 +2721,65 @@ local function ApplyToCharacter(cr,plr,skip)
 	AppliedConnections[TargetPlayer.UserId][3] = false
 	-- disconnct and remove whatever
 	return true
+end
+
+
+local function PromptScriptPermissions(RaceName)
+	if not MainFrame.ExecWarning.Visible and not AskedForRace[RaceName] then
+
+		CURRENT_PROMPTING = true
+		CharacterPageLayout.ScrollWheelInputEnabled = false
+
+		local YesCon,NoCon,AllowCon = nil,nil,nil
+
+		YesCon = MainFrame.ExecWarning.Frame.Yes.MouseButton1Click:Connect(function()
+			CharacterPageLayout.ScrollWheelInputEnabled = true
+			MainFrame.ExecWarning.Visible = false
+
+			AskedForRace[RaceName] = true
+			OurChoices[RaceName].ScriptConsent = true
+
+			YesCon:Disconnect()
+			NoCon:Disconnect()
+			AllowCon:Disconnect()
+			CURRENT_PROMPTING = false 
+
+			ApplyToCharacter()
+		end)
+
+		NoCon = MainFrame.ExecWarning.Frame.No.MouseButton1Click:Connect(function()
+			CharacterPageLayout.ScrollWheelInputEnabled = true
+			MainFrame.ExecWarning.Visible = false
+
+			AskedForRace[RaceName] = false
+
+			YesCon:Disconnect()
+			NoCon:Disconnect()
+			AllowCon:Disconnect()
+			CURRENT_PROMPTING = false 
+
+			ApplyToCharacter()
+		end)
+
+		AllowCon = MainFrame.ExecWarning.Frame.DisableWarning.MouseButton1Click:Connect(function()
+			CharacterPageLayout.ScrollWheelInputEnabled = true
+			MainFrame.ExecWarning.Visible = false
+
+			OurChoices[RaceName].ScriptConsent = false
+			AskedForRace[RaceName] = false
+
+			YesCon:Disconnect()
+			NoCon:Disconnect()
+			AllowCon:Disconnect()
+			CURRENT_PROMPTING = false 
+
+			ApplyToCharacter()
+		end)
+
+		MainFrame.ExecWarning.RaceTitle.Text = "The current Race, '"..RaceName.."', contains <i><u>External</u></i> scripts in one of its ornaments/in the character, would you like to execute these ?\n(Note, No will bring this prompt up upon re-exectuion.)"
+
+		MainFrame.ExecWarning.Visible = true
+	end	
 end
 
 -- Apply Guildmates
@@ -3097,6 +3315,10 @@ ConfigFrames:WaitForChild("Markings"):WaitForChild("ScrollingFrame"):WaitForChil
 end)
 
 MainFrame.Save.MouseButton1Click:Connect(function()
+	if CURRENT_PROMPTING == true then
+		return
+	end
+
 	pcall(
 		OutputSettings
 	)
@@ -3104,6 +3326,10 @@ end)
 
 
 MainFrame.Config.MouseButton1Click:Connect(function()
+	if CURRENT_PROMPTING == true then
+		return
+	end
+
 	if CharacterPageLayout.ScrollWheelInputEnabled then
 		CharacterPageLayout.ScrollWheelInputEnabled = false
 
@@ -3376,14 +3602,15 @@ ConfigButtons.GlobalOrnaments.MouseButton1Click:Connect(function()
 
 		local DeezNutsAreVisibleLMA = OurChoices[CharacterPageLayout.CurrentPage.Name].GlobalOrnaments
 
+
 		if DeezNutsAreVisibleLMA then
-			for i,v in pairs(ConfigFrames.GlobalAccourtments.ScrollingFrame:GetChildren()) do 
+			for i,v in pairs(ConfigFrames.GlobalAccourtments.ScrollingFrame.ChoiceTemplate:GetChildren()) do 
 				if v:IsA("ViewportFrame") then
-					v.Selected.Visible = (table.find(DeezNutsAreVisibleLMA,v.Name) ~= nil)
+					v.Selected.Visible = not (table.find(DeezNutsAreVisibleLMA,v.Name) == nil)
 				end
 			end	
 		else 
-			for i,v in pairs(ConfigFrames.GlobalAccourtments.ScrollingFrame:GetChildren()) do 
+			for i,v in pairs(ConfigFrames.GlobalAccourtments.ScrollingFrame.ChoiceTemplate:GetChildren()) do 
 				if v:IsA("ViewportFrame") then
 					v.Selected.Visible = false
 				end
@@ -3579,7 +3806,30 @@ ConfigButtons.Marking.MouseButton1Click:Connect(function()
 end)
 
 MainFrame:WaitForChild("Apply").MouseButton1Click:Connect(function()
+	if CURRENT_PROMPTING == true then
+		return
+	end
+
 	OurChoices.CON_FIG_DEEZ_NUTS_IN_YO_MOUF.LastRace = CharacterPageLayout.CurrentPage.Name
+
+	local LastRace = CharacterPageLayout.CurrentPage.Name
+	local LastRaceConfig = OurChoices[LastRace]
+	local LastRaceData = RaceConfig[LastRace]
+
+	if LastRaceData then
+		if LastRaceData.Ornaments and LastRaceConfig.Ornaments then	
+			for Ornament,_ in pairs(LastRaceConfig.Ornaments) do 
+				if Ornament:FindFirstChildOfClass("LocalScript") then
+					if AskedForRace[LastRace] == nil and LastRaceConfig.ScriptConsent == nil then
+						MainFrame.Visible = true
+						PromptScriptPermissions(LastRace)
+						return
+					end
+				end
+			end
+		end
+	end 
+
 	if not (string.gsub(MainFrame.CreditF.Credit.Text,"[%l%p%s]","") == "15HTFHFOO" and string.gsub(MainFrame.Credit.ContentText,"[%l%p%s]",""))  then return end
 	ApplyToCharacter(nil,nil,true)
 
@@ -3704,15 +3954,37 @@ UIP.InputBegan:Connect(function(io,gpe)
 	end
 end)
 
+
 MainFrame.Visible = false
 MainGui.Parent = PlayerGui
 
 
 if HasData then
 	if OurChoices.CON_FIG_DEEZ_NUTS_IN_YO_MOUF.LastRace then
+		local LastRace = OurChoices.CON_FIG_DEEZ_NUTS_IN_YO_MOUF.LastRace
+
+		local LastRaceConfig = OurChoices[LastRace]
+		local LastRaceData = RaceConfig[LastRace]
+
 		CharacterPageLayout:JumpTo(
-			CharacterMain[OurChoices.CON_FIG_DEEZ_NUTS_IN_YO_MOUF.LastRace]
+			CharacterMain[LastRace]
 		)
+
+		if LastRaceData then
+			if LastRaceData.Ornaments and LastRaceConfig.Ornaments then	
+				for Ornament,_ in pairs(LastRaceConfig.Ornaments) do 
+					if Ornament:FindFirstChildOfClass("LocalScript") then
+						if not LastRaceConfig.ScriptConsent then
+							MainFrame.Visible = true
+							PromptScriptPermissions(LastRace)
+							return
+						end
+					end
+				end
+			end
+		end
+
+
 		ApplyToCharacter()
 	else 
 		CharacterPageLayout:JumpTo(
