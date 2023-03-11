@@ -22,6 +22,10 @@ execute the script
 loadstring(game:HttpGet("https://raw.githubusercontent.com/AzurasDev/DeepwokenRaceMorpher/main/RaceMorphMenu.lua"))()
 ```
 
+# Update Log
+ + Added More Races
+ + Added More Ornaments
+ + Added More Enchants
 
 # Documentation
 
