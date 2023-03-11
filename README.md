@@ -19,7 +19,7 @@ execute the script
 
 # keybinds are LeftCtrl + LeftAlt
 ```LUA
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ToldeHub/DeepwokenRaceMorpher/main/RaceMorphMenu.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/AzurasDev/DeepwokenRaceMorpher/main/RaceMorphMenu.lua"))()
 ```
 
 
