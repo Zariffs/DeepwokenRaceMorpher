@@ -104,3 +104,6 @@ A Color3 value with your races eye color , skin color and hair color, called 'Ey
 And, another String value called 'DefaultVarient' with your varient name in mind.
 
 To add varients, add a folder inside the RaceData folder that copies the above objects, with the varient name that you want as the folders name.
+
+# game if youre retarded
+https://www.roblox.com/games/4111023553/Deepwoken-Verse-2
