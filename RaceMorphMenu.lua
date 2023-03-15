@@ -1,8 +1,13 @@
 
-
 if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
+
+game:GetService("StarterGui"):SetCore("SendNotification",{
+	Title = "Morph Gui's Loading...",
+	Text = "(Ctrl + Alt is the current shortcut.)",
+	Duration = 10
+})
 
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
@@ -57,11 +62,11 @@ if RunService:IsStudio() then
 	MainGui = script:WaitForChild("MorphGui")
 else 	
 	if not isfolder("DeepwokenMorphData") then
-		LocalPlayer:Kick("Race Morph Checksum : \nThe Script couldn't find the whole folder, please make sure to set up the files correctly.")
+		LocalPlayer:Kick("Race Morph Checksum : \nThe Script couldn't find the folder. Please make sure you downlaoded everything and did the instructions correctly.")
 	end
 
 	if not isfile("DeepwokenMorphData/GuiItself.rbxm") then
-		LocalPlayer:Kick("Race Morph Checksum : \nThe Script couldn't find the GUI, please make sure to set up the files correctly.")
+		LocalPlayer:Kick("Race Morph Checksum : \nThe Script couldn't find the GUI, please make sure to set up the files correctly. If you have try re downloading evrything and follow the instructions more carefully")
 	end
 
 	MainGui = game:GetObjects(getsynasset("DeepwokenMorphData/GuiItself.rbxm"))[1]
@@ -620,7 +625,12 @@ local function GetHair(Descriptor:HumanoidDescription)
 					end
 
 					local SpecialMesh = NewHair:WaitForChild("Handle"):FindFirstChildOfClass("SpecialMesh")
-					SpecialMesh.TextureId = "rbxassetid://7740973748"
+					
+					if SpecialMesh then
+						SpecialMesh.TextureId = "rbxassetid://7740973748"
+					else 
+						NewHair.Handle.TextureID = "rbxassetid://7740973748"
+					end
 					--	SpecialMesh.VertexColor
 
 					NewHair.Name = v
@@ -831,6 +841,24 @@ local function ApplyDeepwokenAccourtment(Accourtment,Head,CurrentRace,NoBad)
 
 		if NewAccourtment:FindFirstChild("HideType") then
 			HideEquipmentType(NewAccourtment.HideType.Value,Head.Parent)
+		end
+		
+		local Shirt,Pants = NewAccourtment:FindFirstChildOfClass("Shirt"),NewAccourtment:FindFirstChildOfClass("Pants")
+		
+		if Shirt then
+			local Cloth = Head.Parent:FindFirstChildOfClass("Shirt")
+			if Cloth then
+				Cloth.ShirtTemplate = Shirt.ShirtTemplate
+			end
+			Shirt:Destroy()		
+		end
+		
+		if Pants then
+			local Cloth = Head.Parent:FindFirstChildOfClass("Pants")
+			if Cloth then
+				Cloth.PantsTemplate = Pants.PantsTemplate
+			end
+			Pants:Destroy()		
 		end
 
 		for i,x in pairs(NewAccourtment:GetChildren()) do 
@@ -1768,6 +1796,8 @@ local AppliedConnectC = nil
 local AppliedConnections = {}
 local EnchantConnections = {}
 
+local PBRBackups = Instance.new("Folder",script)
+
 local function ApplyEnchants(Model,Name,All)
 	local BaseFX = EnchantEffects:FindFirstChild(Name)
 	local RightHand,LeftHand = Model:FindFirstChild("RightHand"),Model:FindFirstChild("LeftHand")
@@ -1793,6 +1823,13 @@ local function ApplyEnchants(Model,Name,All)
 						elseif ExistingFX:IsA("PointLight") then
 							ExistingFX.Enabled = false
 						elseif ExistingFX:IsA("SurfaceAppearance") then
+							if not ExistingFX:GetAttribute("OgColorMap") then
+								ExistingFX:SetAtribute("OgColorMap",ExistingFX.ColorMap)
+								ExistingFX:SetAtribute("OgMetalnessMap",ExistingFX.MetalnessMap)
+								ExistingFX:SetAtribute("OgNormalMap",ExistingFX.NormalMap)
+								ExistingFX:SetAtribute("OgRoughnessMap",ExistingFX.RoughnessMap)
+							end
+							
 							ExistingFX.ColorMap = "rbxassetid://0"
 							ExistingFX.MetalnessMap = "rbxassetid://0"
 							ExistingFX.NormalMap = "rbxassetid://0"
@@ -1858,6 +1895,14 @@ local function ApplyEnchants(Model,Name,All)
 						elseif ExistingFX:IsA("PointLight") then
 							ExistingFX.Enabled = false
 						elseif ExistingFX:IsA("SurfaceAppearance") then
+							
+							if not ExistingFX:GetAttribute("OgColorMap") then
+								ExistingFX:SetAtribute("OgColorMap",ExistingFX.ColorMap)
+								ExistingFX:SetAtribute("OgMetalnessMap",ExistingFX.MetalnessMap)
+								ExistingFX:SetAtribute("OgNormalMap",ExistingFX.NormalMap)
+								ExistingFX:SetAtribute("OgRoughnessMap",ExistingFX.RoughnessMap)
+							end
+
 							ExistingFX.ColorMap = "rbxassetid://0"
 							ExistingFX.MetalnessMap = "rbxassetid://0"
 							ExistingFX.NormalMap = "rbxassetid://0"
@@ -1923,6 +1968,13 @@ local function ApplyEnchants(Model,Name,All)
 				elseif ExistingFX:IsA("PointLight") then
 					ExistingFX.Enabled = false
 				elseif ExistingFX:IsA("SurfaceAppearance") then
+					if not ExistingFX:GetAttribute("OgColorMap") then
+						ExistingFX:SetAtribute("OgColorMap",ExistingFX.ColorMap)
+						ExistingFX:SetAtribute("OgMetalnessMap",ExistingFX.MetalnessMap)
+						ExistingFX:SetAtribute("OgNormalMap",ExistingFX.NormalMap)
+						ExistingFX:SetAtribute("OgRoughnessMap",ExistingFX.RoughnessMap)
+					end
+					
 					ExistingFX.ColorMap = "rbxassetid://0"
 					ExistingFX.MetalnessMap = "rbxassetid://0"
 					ExistingFX.NormalMap = "rbxassetid://0"
@@ -2045,6 +2097,11 @@ local function ApplyEnchants(Model,Name,All)
 							Descendant.Transparency = Descendant:GetAttribute("Transparency")
 							Descendant.Reflectance = Descendant:GetAttribute("Reflectance")
 							Descendant.Material = Descendant:GetAttribute("Material")
+						elseif Descendant:IsA("SurfaceAppearance") and Descendant:GetAttribute("OgColorMap") then
+							Descendant.ColorMap = Descendant:GetAttribute("OgColorMap")
+							Descendant.MetalnessMap = Descendant:GetAttribute("OgMetalnessMap")
+							Descendant.NormalMap = Descendant:GetAttribute("OgNormalMap")
+							Descendant.RoughnessMap = Descendant:GetAttribute("OgRoughnessMap")
 						end
 					end
 				end
@@ -2068,6 +2125,11 @@ local function ApplyEnchants(Model,Name,All)
 							Descendant.Transparency = Descendant:GetAttribute("Transparency")
 							Descendant.Reflectance = Descendant:GetAttribute("Reflectance")
 							Descendant.Material = Descendant:GetAttribute("Material")
+						elseif Descendant:IsA("SurfaceAppearance") and Descendant:GetAttribute("OgColorMap") then
+							Descendant.ColorMap = Descendant:GetAttribute("OgColorMap")
+							Descendant.MetalnessMap = Descendant:GetAttribute("OgMetalnessMap")
+							Descendant.NormalMap = Descendant:GetAttribute("OgNormalMap")
+							Descendant.RoughnessMap = Descendant:GetAttribute("OgRoughnessMap")					
 						end
 					end
 				end
@@ -2091,6 +2153,11 @@ local function ApplyEnchants(Model,Name,All)
 								Descendant.Transparency = Descendant:GetAttribute("Transparency")
 								Descendant.Reflectance = Descendant:GetAttribute("Reflectance")
 								Descendant.Material = Descendant:GetAttribute("Material")
+							elseif Descendant:IsA("SurfaceAppearance") and Descendant:GetAttribute("OgColorMap") then
+								Descendant.ColorMap = Descendant:GetAttribute("OgColorMap")
+								Descendant.MetalnessMap = Descendant:GetAttribute("OgMetalnessMap")
+								Descendant.NormalMap = Descendant:GetAttribute("OgNormalMap")
+								Descendant.RoughnessMap = Descendant:GetAttribute("OgRoughnessMap")
 							end
 						end
 					end
@@ -2114,6 +2181,11 @@ local function ApplyEnchants(Model,Name,All)
 					Descendant.Transparency = Descendant:GetAttribute("Transparency")
 					Descendant.Reflectance = Descendant:GetAttribute("Reflectance")
 					Descendant.Material = Descendant:GetAttribute("Material")
+				elseif Descendant:IsA("SurfaceAppearance") and Descendant:GetAttribute("OgColorMap") then
+					Descendant.ColorMap = Descendant:GetAttribute("OgColorMap")
+					Descendant.MetalnessMap = Descendant:GetAttribute("OgMetalnessMap")
+					Descendant.NormalMap = Descendant:GetAttribute("OgNormalMap")
+					Descendant.RoughnessMap = Descendant:GetAttribute("OgRoughnessMap")
 				end
 			end
 		end
@@ -3185,7 +3257,21 @@ if GlobalAssets then
 		MainViewPortCamera.FieldOfView = 20	
 
 		SmallViewport.CurrentCamera = MainViewPortCamera
-
+		
+		if v.Name:len() > 12 then
+			SmallViewport.ToolTip.Text = "\""..(v.Name:sub(1,9)).."...\""
+		else 
+			SmallViewport.ToolTip.Text = "\""..v.Name.."\""
+		end
+		
+		SmallViewport.Clickable.MouseEnter:Connect(function()
+			SmallViewport.ToolTip.Visible = true
+		end)
+		
+		SmallViewport.Clickable.MouseLeave:Connect(function()
+			SmallViewport.ToolTip.Visible = false
+		end)
+		
 		SmallViewport.Clickable.MouseButton1Click:Connect(function()
 			local Enabled = not SmallViewport.Selected.Visible
 
@@ -3409,6 +3495,20 @@ MainFrame.Config.MouseButton1Click:Connect(function()
 
 				local SmallViewport = TemplateButtons:WaitForChild("ConfigViewportFrame"):Clone()
 				SmallViewport.Name = v.Name 
+				
+				if v.Name:len() > 12 then
+					SmallViewport.ToolTip.Text = "\""..(v.Name:sub(1,9)).."...\""
+				else 
+					SmallViewport.ToolTip.Text = "\""..v.Name.."\""
+				end
+				
+				SmallViewport.Clickable.MouseEnter:Connect(function()
+					SmallViewport.ToolTip.Visible = true
+				end)
+
+				SmallViewport.Clickable.MouseLeave:Connect(function()
+					SmallViewport.ToolTip.Visible = false
+				end)
 
 				local ThumbnailDummy = 	SmallViewport.WorldModel.ThumbnailDummy
 				SmallViewport.Parent = ConfigFrames.Faces.ScrollingFrame.ChoiceTemplate
@@ -3465,7 +3565,21 @@ MainFrame.Config.MouseButton1Click:Connect(function()
 
 				local SmallViewport = TemplateButtons:WaitForChild("ConfigViewportFrame"):Clone()
 				SmallViewport.Name = v.Name 
+				
+				if v.Name:len() > 12 then
+					SmallViewport.ToolTip.Text = "\""..(v.Name:sub(1,9)).."...\""
+				else 
+					SmallViewport.ToolTip.Text = "\""..v.Name.."\""
+				end
+				
+				SmallViewport.Clickable.MouseEnter:Connect(function()
+					SmallViewport.ToolTip.Visible = true
+				end)
 
+				SmallViewport.Clickable.MouseLeave:Connect(function()
+					SmallViewport.ToolTip.Visible = false
+				end)
+				
 				local ThumbnailDummy = 	SmallViewport.WorldModel.ThumbnailDummy
 				SmallViewport.Parent = ConfigFrames.Accourtments.ScrollingFrame.ChoiceTemplate
 
@@ -3544,7 +3658,21 @@ MainFrame.Config.MouseButton1Click:Connect(function()
 
 				local SmallViewport = TemplateButtons:WaitForChild("ConfigViewportFrame"):Clone()
 				SmallViewport.Name = v.Name 
+								
+				if v.Name:len() > 12 then
+					SmallViewport.ToolTip.Text = "\""..(v.Name:sub(1,9)).."...\""
+				else 
+					SmallViewport.ToolTip.Text = "\""..v.Name.."\""
+				end
+				
+				SmallViewport.Clickable.MouseEnter:Connect(function()
+					SmallViewport.ToolTip.Visible = true
+				end)
 
+				SmallViewport.Clickable.MouseLeave:Connect(function()
+					SmallViewport.ToolTip.Visible = false
+				end)
+				
 				local ThumbnailDummy = 	SmallViewport.WorldModel.ThumbnailDummy
 				SmallViewport.Parent = ConfigFrames.Markings.ScrollingFrame.ChoiceTemplate
 
