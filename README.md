@@ -18,7 +18,7 @@ execute the script
 ```
 
 # keybinds are LeftCtrl + LeftAlt
-To open Gold LeftCtrl and click LeftAlt
+To open hold LeftCtrl and click LeftAlt
 ```LUA
 loadstring(game:HttpGet("https://raw.githubusercontent.com/AzurasDev/DeepwokenRaceMorpher/main/RaceMorphMenu.lua"))()
 ```
